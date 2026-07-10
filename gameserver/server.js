@@ -70,6 +70,14 @@ app.use((req, res, next) => {
 });
 
 // ===============================
+// RUTA PRINCIPAL (RAÍZ)
+// ===============================
+
+app.get("/", (req, res) => {
+    res.send("GameVerse Server funcionando");
+});
+
+// ===============================
 // FUNCIONES DE SEGURIDAD
 // ===============================
 
