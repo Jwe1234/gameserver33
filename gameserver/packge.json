@@ -4,5 +4,11 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "multer": "^2.0.1",
+    "fs-extra": "^11.3.0",
+    "adm-zip": "^0.5.16"
   }
 }
