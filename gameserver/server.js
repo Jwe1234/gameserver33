@@ -647,8 +647,9 @@ app.post("/api/generar-apk", (req, res, next) => {
 
         const apkFinal = await guardarAPKFinal(apkGenerada, nombre, version);
         
-        // Devolver URL de descarga permanente
-        const urlDescarga = `http://localhost:${PORT}/descargas/${apkFinal.nombre}`;
+        // Detectar la URL base según el entorno
+        const baseUrl = req.headers.host ? `http://${req.headers.host}` : `http://localhost:${PORT}`;
+        const urlDescarga = `${baseUrl}/descargas/${apkFinal.nombre}`;
 
         console.log(`✅ APK generada: ${apkFinal.ruta}`);
         console.log(`🔗 URL de descarga: ${urlDescarga}`);
