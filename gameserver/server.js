@@ -729,7 +729,5 @@ app.listen(PORT, "0.0.0.0", () => {
     console.log("=================================");
     console.log("🚀 GameVerse APK Server iniciado");
     console.log("🌐 Puerto:", PORT);
-    console.log("📁 Uploads:", uploadFolder);
-    console.log("📁 APKs:", apksFolder);
     console.log("=================================");
 });
