@@ -385,7 +385,7 @@ async function crearArchivosGradle(android, paquete, nombre) {
         `android.useAndroidX=true
 android.enableJetifier=true
 org.gradle.daemon=false
-org.gradle.jvmargs=-Xmx512m -Dfile.encoding=UTF-8
+org.gradle.jvmargs=-Xmx1024m -Dfile.encoding=UTF-8
 org.gradle.workers.max=1
 org.gradle.parallel=false`
     );
