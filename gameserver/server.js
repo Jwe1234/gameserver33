@@ -655,8 +655,13 @@ app.post("/api/generar-apk", (req, res, next) => {
 
         const apkFinal = await guardarAPKFinal(apkGenerada, nombre, version);
         
-        // Detectar la URL base según el entorno
-        const baseUrl = req.headers.host ? `http://${req.headers.host}` : `http://localhost:${PORT}`;
+        // Detectar la URL base correctamente según el entorno
+        const protocolo = req.headers["x-forwarded-proto"] || "http";
+        
+        const baseUrl = req.headers.host
+            ? `${protocolo}://${req.headers.host}`
+            : `http://localhost:${PORT}`;
+        
         const urlDescarga = `${baseUrl}/descargas/${apkFinal.nombre}`;
 
         console.log(`✅ APK generada: ${apkFinal.ruta}`);

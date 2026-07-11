@@ -1,0 +1,6 @@
+[phases.setup]
+nixPkgs = [
+  "nodejs",
+  "jdk17",
+  "gradle"
+]
