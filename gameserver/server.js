@@ -382,12 +382,12 @@ async function crearArchivosGradle(android, paquete, nombre) {
     // gradle.properties
     await fs.outputFile(
         path.join(android, "gradle.properties"),
-        `android.useAndroidX=true
-android.enableJetifier=true
+        `org.gradle.jvmargs=-Xmx1024m -Dfile.encoding=UTF-8
 org.gradle.daemon=false
-org.gradle.jvmargs=-Xmx256m -Dfile.encoding=UTF-8
 org.gradle.workers.max=1
-org.gradle.parallel=false`
+org.gradle.parallel=false
+android.useAndroidX=true
+android.enableJetifier=true`
     );
 
     // settings.gradle
@@ -493,8 +493,17 @@ public class MainActivity extends Activity {
 function compilarAPK(proyecto) {
     return new Promise((resolve, reject) => {
         exec(
-            `cd "${proyecto}" && gradle assembleDebug --stacktrace --no-daemon --max-workers=1 --no-parallel`,
-            { maxBuffer: 1024 * 1024 * 50 },
+            `cd "${proyecto}" && gradle assembleDebug --no-daemon -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-Xmx1024m" --max-workers=1 --no-parallel`,
+            { 
+                maxBuffer: 1024 * 1024 * 50,
+                timeout: 600000,
+                env: {
+                    ...process.env,
+                    GRADLE_OPTS: "-Dorg.gradle.daemon=false -Xmx1024m",
+                    JAVA_OPTS: "-Xmx1024m",
+                    _JAVA_OPTIONS: "-Xmx1024m"
+                }
+            },
             async (error, stdout, stderr) => {
                 let log = `
 ========== GAMEVERSE APK COMPILATION LOG ==========
@@ -757,23 +766,6 @@ process.on("uncaughtException", (error) => {
 process.on("unhandledRejection", (error) => {
     console.log("❌ Promesa fallida:", error);
 });
-
-// ===============================
-// ACEPTAR LICENCIAS ANDROID SDK
-// ===============================
-
-// Aceptar licencias Android SDK automáticamente
-const { execSync } = require("child_process");
-
-try {
-    execSync("yes | sdkmanager --licenses", {
-        stdio: "inherit"
-    });
-
-    console.log("✅ Licencias Android aceptadas");
-} catch (error) {
-    console.log("⚠️ No se pudieron aceptar licencias automáticamente");
-}
 
 // ===============================
 // INICIO DEL SERVIDOR
