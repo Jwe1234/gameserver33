@@ -2,5 +2,15 @@
 nixPkgs = [
   "nodejs",
   "jdk17",
-  "gradle"
+  "gradle",
+  "android-tools"
+]
+
+[phases.build]
+cmds = [
+  "echo Instalando herramientas...",
+  "node --version",
+  "java --version",
+  "gradle --version",
+  "npm install"
 ]
