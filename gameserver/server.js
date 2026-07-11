@@ -385,7 +385,7 @@ async function crearArchivosGradle(android, paquete, nombre) {
         `android.useAndroidX=true
 android.enableJetifier=true
 org.gradle.daemon=false
-org.gradle.jvmargs=-Xmx1024m -Dfile.encoding=UTF-8
+org.gradle.jvmargs=-Xmx256m -Dfile.encoding=UTF-8
 org.gradle.workers.max=1
 org.gradle.parallel=false`
     );
@@ -493,7 +493,7 @@ public class MainActivity extends Activity {
 function compilarAPK(proyecto) {
     return new Promise((resolve, reject) => {
         exec(
-            `cd "${proyecto}" && gradle assembleDebug --stacktrace --no-daemon --max-workers=1 --info`,
+            `cd "${proyecto}" && gradle assembleDebug --stacktrace --no-daemon --max-workers=1 --no-parallel`,
             { maxBuffer: 1024 * 1024 * 50 },
             async (error, stdout, stderr) => {
                 let log = `
