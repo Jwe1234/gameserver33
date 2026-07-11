@@ -608,6 +608,21 @@ app.get("/api/diagnostico", async (req, res) => {
 });
 
 // ===============================
+// RUTA: MEMORIA
+// ===============================
+
+app.get("/api/memoria", (req, res) => {
+    const os = require("os");
+
+    res.json({
+        totalMB: Math.round(os.totalmem() / 1024 / 1024),
+        libreMB: Math.round(os.freemem() / 1024 / 1024),
+        nodeHeapMB: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+        nodeUsedMB: Math.round(process.memoryUsage().heapUsed / 1024 / 1024)
+    });
+});
+
+// ===============================
 // RUTA PRINCIPAL: GENERAR APK
 // ===============================
 
