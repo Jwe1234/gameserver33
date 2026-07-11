@@ -382,11 +382,12 @@ async function crearArchivosGradle(android, paquete, nombre) {
     // gradle.properties
     await fs.outputFile(
         path.join(android, "gradle.properties"),
-        `org.gradle.jvmargs=-Xmx512m -Dfile.encoding=UTF-8
+        `org.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m -Dfile.encoding=UTF-8
 org.gradle.daemon=false
 org.gradle.workers.max=1
 org.gradle.parallel=false
 org.gradle.caching=false
+org.gradle.configuration-cache=false
 android.useAndroidX=true
 android.enableJetifier=true`
     );
@@ -418,7 +419,7 @@ include ':app'`
     await fs.outputFile(
         path.join(android, "build.gradle"),
         `plugins {
-    id 'com.android.application' version '8.2.2' apply false
+    id 'com.android.application' version '8.1.4' apply false
 }`
     );
 
@@ -431,12 +432,12 @@ include ':app'`
 
 android {
     namespace '${paquete}'
-    compileSdk 29
+    compileSdk 34
 
     defaultConfig {
         applicationId '${paquete}'
         minSdk 23
-        targetSdk 29
+        targetSdk 34
         versionCode 1
         versionName "1.0"
     }
@@ -494,13 +495,13 @@ public class MainActivity extends Activity {
 function compilarAPK(androidPath) {
     return new Promise((resolve, reject) => {
 
-        const gradleCommand = `cd "${androidPath}" && gradle assembleDebug --no-daemon --stacktrace --info`;
+        const gradleCommand = `cd "${androidPath}" && gradle assembleDebug --no-daemon --stacktrace --no-parallel`;
 
         exec(gradleCommand, {
             env: {
                 ...process.env,
-                _JAVA_OPTIONS: "-Xmx512m",
-                GRADLE_OPTS: "-Xmx512m -Dorg.gradle.daemon=false"
+                _JAVA_OPTIONS: "-Xmx768m -XX:MaxMetaspaceSize=256m",
+                GRADLE_OPTS: "-Xmx768m -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=1"
             },
             maxBuffer: 1024 * 1024 * 10
         }, async (error, stdout, stderr) => {
