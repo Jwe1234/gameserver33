@@ -382,7 +382,7 @@ async function crearArchivosGradle(android, paquete, nombre) {
     // gradle.properties
     await fs.outputFile(
         path.join(android, "gradle.properties"),
-        `org.gradle.jvmargs=-Xmx512m -Dfile.encoding=UTF-8
+        `org.gradle.jvmargs=-Xmx768m -Dfile.encoding=UTF-8
 org.gradle.daemon=false
 org.gradle.workers.max=1
 org.gradle.parallel=false
@@ -430,12 +430,12 @@ include ':app'`
 
 android {
     namespace '${paquete}'
-    compileSdk 34
+    compileSdk 29
 
     defaultConfig {
         applicationId '${paquete}'
         minSdk 23
-        targetSdk 34
+        targetSdk 29
         versionCode 1
         versionName "1.0"
     }
@@ -492,53 +492,52 @@ public class MainActivity extends Activity {
 
 function compilarAPK(proyecto) {
     return new Promise((resolve, reject) => {
+
         exec(
-            `cd "${proyecto}" && gradle assembleDebug --no-daemon -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-Xmx512m" --max-workers=1 --no-parallel`,
-            { 
-                maxBuffer: 1024 * 1024 * 50,
-                timeout: 600000,
+            `cd "${proyecto}" && gradle assembleDebug --no-daemon --no-parallel --max-workers=1`,
+            {
+                maxBuffer: 1024 * 1024 * 100,
+                timeout: 900000,
+
                 env: {
                     ...process.env,
-                    GRADLE_OPTS: "-Dorg.gradle.daemon=false -Xmx512m",
-                    JAVA_OPTS: "-Xmx512m",
-                    _JAVA_OPTIONS: "-Xmx512m"
+                    GRADLE_OPTS: "-Xmx768m",
+                    JAVA_OPTS: "-Xmx768m",
+                    _JAVA_OPTIONS: "-Xmx768m"
                 }
             },
-            async (error, stdout, stderr) => {
-                let log = `
-========== GAMEVERSE APK COMPILATION LOG ==========
-FECHA: ${new Date().toISOString()}
-PROYECTO: ${proyecto}
 
-========== SALIDA ==========
-${stdout || "Sin salida"}
+            async (error, stdout, stderr) => {
+
+                let log = `
+========== GAMEVERSE BUILD ==========
+${stdout}
 
 ========== ERROR ==========
-${stderr || "Sin errores"}
-
-===================================================
+${stderr}
 `;
 
                 await guardarLog(log);
 
-                if (error) {
-                    console.log("STDOUT:");
-                    console.log(stdout);
 
-                    console.log("STDERR:");
-                    console.log(stderr);
+                if(error){
 
                     reject({
-                        mensaje: "Error compilando APK",
-                        detalle: stdout + "\n" + stderr + "\n" + error.message
+                        mensaje:"Error compilando APK",
+                        detalle: stdout + stderr + error.message
                     });
 
                     return;
                 }
 
-                resolve({ apk: true });
+
+                resolve({
+                    apk:true
+                });
+
             }
         );
+
     });
 }
 
