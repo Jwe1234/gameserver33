@@ -382,7 +382,7 @@ async function crearArchivosGradle(android, paquete, nombre) {
     // gradle.properties
     await fs.outputFile(
         path.join(android, "gradle.properties"),
-        `org.gradle.jvmargs=-Xmx1024m -Dfile.encoding=UTF-8
+        `org.gradle.jvmargs=-Xmx512m -Dfile.encoding=UTF-8
 org.gradle.daemon=false
 org.gradle.workers.max=1
 org.gradle.parallel=false
@@ -493,15 +493,15 @@ public class MainActivity extends Activity {
 function compilarAPK(proyecto) {
     return new Promise((resolve, reject) => {
         exec(
-            `cd "${proyecto}" && gradle assembleDebug --no-daemon -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-Xmx1024m" --max-workers=1 --no-parallel`,
+            `cd "${proyecto}" && gradle assembleDebug --no-daemon -Dorg.gradle.daemon=false -Dorg.gradle.jvmargs="-Xmx512m" --max-workers=1 --no-parallel`,
             { 
                 maxBuffer: 1024 * 1024 * 50,
                 timeout: 600000,
                 env: {
                     ...process.env,
-                    GRADLE_OPTS: "-Dorg.gradle.daemon=false -Xmx1024m",
-                    JAVA_OPTS: "-Xmx1024m",
-                    _JAVA_OPTIONS: "-Xmx1024m"
+                    GRADLE_OPTS: "-Dorg.gradle.daemon=false -Xmx512m",
+                    JAVA_OPTS: "-Xmx512m",
+                    _JAVA_OPTIONS: "-Xmx512m"
                 }
             },
             async (error, stdout, stderr) => {
