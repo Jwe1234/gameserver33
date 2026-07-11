@@ -515,7 +515,16 @@ ${stderr || "Sin errores"}
                 if (error) {
                     reject({
                         mensaje: "Error compilando APK",
-                        detalle: stderr || error.message
+                        detalle: `
+ERROR:
+${error.message}
+
+STDERR:
+${stderr}
+
+STDOUT:
+${stdout}
+`
                     });
                     return;
                 }
