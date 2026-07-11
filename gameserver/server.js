@@ -404,10 +404,11 @@ include ':app'`
     );
 
     // build.gradle (raíz)
+    // CAMBIO 1: Versión de Gradle actualizada de 7.4.2 a 8.2.2
     await fs.outputFile(
         path.join(android, "build.gradle"),
         `plugins {
-    id 'com.android.application' version '7.4.2' apply false
+    id 'com.android.application' version '8.2.2' apply false
 }`
     );
 
@@ -482,8 +483,9 @@ public class MainActivity extends Activity {
 
 function compilarAPK(proyecto) {
     return new Promise((resolve, reject) => {
+        // CAMBIO 2: Añadido el flag --no-daemon al comando de compilación
         exec(
-            `cd "${proyecto}" && gradle assembleDebug --stacktrace`,
+            `cd "${proyecto}" && gradle assembleDebug --stacktrace --no-daemon`,
             { maxBuffer: 1024 * 1024 * 50 },
             async (error, stdout, stderr) => {
                 let log = `
