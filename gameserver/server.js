@@ -422,7 +422,7 @@ include ':app'`
 }`
     );
 
-    // app/build.gradle - MODIFICADO: con appcompat
+    // app/build.gradle
     await fs.outputFile(
         path.join(android, "app", "build.gradle"),
         `plugins {
@@ -506,13 +506,20 @@ function compilarAPK(androidPath) {
             maxBuffer: 1024 * 1024 * 10
         }, async (error, stdout, stderr) => {
 
+            // Mostrar toda la salida para depuración
+            console.log("STDOUT:");
+            console.log(stdout);
+
+            console.log("STDERR:");
+            console.log(stderr);
+
             if (error) {
                 console.log("ERROR GRADLE:");
                 console.log(stderr || error.message);
                 
                 reject({
                     mensaje: "Error compilando APK",
-                    detalle: stderr || error.message
+                    detalle: stdout + "\n\n" + stderr + "\n\n" + error.message
                 });
                 return;
             }
