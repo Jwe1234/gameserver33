@@ -79,15 +79,17 @@ allprojects {
 }
 `;
 
-        // gradle.properties
+        // gradle.properties con memoria reducida
         const gradleProperties = `
-org.gradle.jvmargs=-Xmx640m -XX:MaxMetaspaceSize=128m -Dfile.encoding=UTF-8
+org.gradle.jvmargs=-Xmx384m -XX:MaxMetaspaceSize=64m -Dfile.encoding=UTF-8
+
 org.gradle.daemon=false
 org.gradle.workers.max=1
 org.gradle.parallel=false
 org.gradle.caching=false
 org.gradle.configuration-cache=false
 org.gradle.vfs.watch=false
+
 android.useAndroidX=true
 android.enableJetifier=true
 `;
@@ -98,13 +100,13 @@ rootProject.name = "Gameverse"
 include ':app'
 `;
 
-        // AndroidManifest.xml con exported=true
+        // AndroidManifest.xml con icono por defecto
         const manifest = `
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@android:drawable/sym_def_app_icon"
         android:label="Gameverse"
         android:theme="@style/Theme.AppCompat.Light">
         <activity 
@@ -132,7 +134,7 @@ include ':app'
         await fs.writeFile(path.join(androidPath, 'settings.gradle'), settingsGradle);
         await fs.writeFile(path.join(srcPath, 'AndroidManifest.xml'), manifest);
         
-        // app/build.gradle
+        // app/build.gradle con SDK 34
         const appGradle = `
 plugins {
     id 'com.android.application'
@@ -140,12 +142,12 @@ plugins {
 
 android {
     namespace "com.gameverse.app"
-    compileSdk 32
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.gameverse.app"
         minSdk 21
-        targetSdk 32
+        targetSdk 34
         versionCode 1
         versionName "1.0"
     }
@@ -230,26 +232,31 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 
-// Función compilarAPK optimizada con ./gradlew
+// Función compilarAPK con memoria reducida
 function compilarAPK(androidPath) {
     return new Promise((resolve, reject) => {
-        const gradleCommand = `cd "${androidPath}" && ./gradlew assembleDebug --no-daemon --stacktrace --no-parallel --max-workers=1`;
+
+        const gradleCommand = `cd "${androidPath}" && gradle assembleDebug --no-daemon --no-parallel --max-workers=1 --no-watch-fs`;
 
         exec(gradleCommand, {
             env: {
                 ...process.env,
-                _JAVA_OPTIONS: "-Xmx640m -XX:MaxMetaspaceSize=128m",
-                GRADLE_OPTS: "-Xmx640m -XX:MaxMetaspaceSize=128m -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=1"
+                _JAVA_OPTIONS: "-Xmx384m -XX:MaxMetaspaceSize=64m",
+                GRADLE_OPTS: "-Xmx384m -XX:MaxMetaspaceSize=64m -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=1"
             },
-            maxBuffer: 1024 * 1024 * 5
+
+            maxBuffer: 1024 * 1024 * 2
+
         }, async (error, stdout, stderr) => {
+
             if (error) {
+
                 console.log("ERROR GRADLE:");
                 console.log(stderr || error.message);
 
                 reject({
-                    mensaje: "Error compilando APK",
-                    detalle: stderr || error.message
+                    mensaje:"Error compilando APK",
+                    detalle:stderr || error.message
                 });
 
                 return;
@@ -260,13 +267,19 @@ function compilarAPK(androidPath) {
             await guardarLog(`
 ========== GAMEVERSE APK LOG ==========
 FECHA: ${new Date().toISOString()}
+
 SALIDA:
 ${stdout}
+
 =======================================
 `);
 
-            resolve({ apk: true });
+            resolve({
+                apk:true
+            });
+
         });
+
     });
 }
 
@@ -289,7 +302,7 @@ async function prepararAPK(archivos) {
         for (const archivo of archivos) {
             const destino = path.join(assetsPath, archivo.originalname);
             await fs.copy(archivo.path, destino);
-            await fs.remove(archivo.path); // Limpieza inmediata
+            await fs.remove(archivo.path);
         }
         
         // Compilar APK
@@ -319,7 +332,6 @@ async function prepararAPK(archivos) {
         }
     } catch (error) {
         console.error('Error en prepararAPK:', error);
-        // Limpieza inmediata en caso de error
         await limpiarCarpeta(proyectoPath);
         throw error;
     }
@@ -376,12 +388,8 @@ app.get('/health', (req, res) => {
     });
 });
 
-// Limpieza de memoria cada 30 segundos
+// Monitoreo de memoria
 setInterval(() => {
-    if (global.gc) {
-        global.gc();
-    }
-    
     console.log("Memoria usada:",
         Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
         "MB");
@@ -391,7 +399,7 @@ setInterval(() => {
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Gameverse Server running on port ${PORT}`);
     console.log(`📊 Memory limit: 512MB (Node.js)`);
-    console.log(`📦 Gradle memory: 640MB`);
+    console.log(`📦 Gradle memory: 384MB`);
     console.log(`⚙️  Workers: 1 | No parallel`);
 });
 
