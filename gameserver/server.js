@@ -382,14 +382,16 @@ async function crearArchivosGradle(android, paquete, nombre) {
     // gradle.properties
     await fs.outputFile(
         path.join(android, "gradle.properties"),
-        `org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8
+        `org.gradle.jvmargs=-Xmx1024m -XX:MaxMetaspaceSize=256m -Dfile.encoding=UTF-8
 org.gradle.daemon=false
 org.gradle.workers.max=1
 org.gradle.parallel=false
 org.gradle.caching=false
 org.gradle.configuration-cache=false
 android.useAndroidX=true
-android.enableJetifier=true`
+android.enableJetifier=true
+android.defaults.buildfeatures.buildconfig=true
+org.gradle.vfs.watch=false`
     );
 
     // settings.gradle
@@ -419,7 +421,7 @@ include ':app'`
     await fs.outputFile(
         path.join(android, "build.gradle"),
         `plugins {
-    id 'com.android.application' version '8.1.4' apply false
+    id 'com.android.application' version '8.0.2' apply false
 }`
     );
 
@@ -432,12 +434,12 @@ include ':app'`
 
 android {
     namespace '${paquete}'
-    compileSdk 34
+    compileSdk 33
 
     defaultConfig {
         applicationId '${paquete}'
         minSdk 23
-        targetSdk 34
+        targetSdk 33
         versionCode 1
         versionName "1.0"
     }
@@ -495,13 +497,13 @@ public class MainActivity extends Activity {
 function compilarAPK(androidPath) {
     return new Promise((resolve, reject) => {
 
-        const gradleCommand = `cd "${androidPath}" && gradle assembleDebug --no-daemon --stacktrace --no-parallel`;
+        const gradleCommand = `cd "${androidPath}" && gradle assembleDebug --no-daemon --stacktrace --no-parallel --max-workers=1`;
 
         exec(gradleCommand, {
             env: {
                 ...process.env,
-                _JAVA_OPTIONS: "-Xmx2048m -XX:MaxMetaspaceSize=512m",
-                GRADLE_OPTS: "-Xmx2048m -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=1"
+                _JAVA_OPTIONS: "-Xmx1024m -XX:MaxMetaspaceSize=256m",
+                GRADLE_OPTS: "-Xmx1024m -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=1"
             },
             maxBuffer: 1024 * 1024 * 10
         }, async (error, stdout, stderr) => {
