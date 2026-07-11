@@ -493,7 +493,7 @@ public class MainActivity extends Activity {
 function compilarAPK(proyecto) {
     return new Promise((resolve, reject) => {
         exec(
-            `cd "${proyecto}" && gradle assembleDebug --stacktrace --no-daemon --max-workers=1`,
+            `cd "${proyecto}" && gradle assembleDebug --stacktrace --no-daemon --max-workers=1 --info`,
             { maxBuffer: 1024 * 1024 * 50 },
             async (error, stdout, stderr) => {
                 let log = `
