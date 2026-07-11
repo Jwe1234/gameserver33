@@ -379,10 +379,10 @@ async function crearArchivosGradle(android, paquete, nombre) {
         `sdk.dir=/usr/lib/android-sdk`
     );
 
-    // gradle.properties
+    // gradle.properties - MODIFICADO: memoria reducida a 256MB
     await fs.outputFile(
         path.join(android, "gradle.properties"),
-        `org.gradle.jvmargs=-Xmx768m -XX:MaxMetaspaceSize=256m -Dfile.encoding=UTF-8
+        `org.gradle.jvmargs=-Xmx256m -Dfile.encoding=UTF-8
 org.gradle.daemon=false
 org.gradle.workers.max=1
 org.gradle.parallel=false
@@ -495,13 +495,15 @@ public class MainActivity extends AppCompatActivity {
 function compilarAPK(androidPath) {
     return new Promise((resolve, reject) => {
 
-        const gradleCommand = `cd "${androidPath}" && gradle assembleDebug --no-daemon --no-parallel --max-workers=1 -Dorg.gradle.jvmargs="-Xmx768m -XX:MaxMetaspaceSize=256m"`;
+        // MODIFICADO: con stacktrace, info y memoria reducida
+        const gradleCommand = `cd "${androidPath}" && gradle assembleDebug --stacktrace --info --no-daemon --max-workers=1`;
 
         exec(gradleCommand, {
             env: {
                 ...process.env,
-                _JAVA_OPTIONS: "-Xmx768m -XX:MaxMetaspaceSize=256m",
-                GRADLE_OPTS: "-Xmx768m -Dorg.gradle.daemon=false"
+                // MODIFICADO: memoria reducida a 256MB
+                _JAVA_OPTIONS: "-Xmx256m",
+                GRADLE_OPTS: "-Xmx256m -Dorg.gradle.daemon=false"
             },
             maxBuffer: 1024 * 1024 * 10
         }, async (error, stdout, stderr) => {
