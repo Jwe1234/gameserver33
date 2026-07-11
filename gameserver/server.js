@@ -373,6 +373,12 @@ async function crearArchivosGradle(android, paquete, nombre) {
 
     await fs.ensureDir(javaPath);
 
+    // local.properties
+    await fs.outputFile(
+        path.join(android, "local.properties"),
+        `sdk.dir=/usr/lib/android-sdk`
+    );
+
     // gradle.properties
     await fs.outputFile(
         path.join(android, "gradle.properties"),
@@ -404,7 +410,6 @@ include ':app'`
     );
 
     // build.gradle (raíz)
-    // CAMBIO 1: Versión de Gradle actualizada de 7.4.2 a 8.2.2
     await fs.outputFile(
         path.join(android, "build.gradle"),
         `plugins {
@@ -483,7 +488,6 @@ public class MainActivity extends Activity {
 
 function compilarAPK(proyecto) {
     return new Promise((resolve, reject) => {
-        // CAMBIO 2: Añadido el flag --no-daemon al comando de compilación
         exec(
             `cd "${proyecto}" && gradle assembleDebug --stacktrace --no-daemon`,
             { maxBuffer: 1024 * 1024 * 50 },
