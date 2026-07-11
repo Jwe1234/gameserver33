@@ -383,7 +383,10 @@ async function crearArchivosGradle(android, paquete, nombre) {
     await fs.outputFile(
         path.join(android, "gradle.properties"),
         `android.useAndroidX=true
-android.enableJetifier=true`
+android.enableJetifier=true
+org.gradle.daemon=false
+org.gradle.jvmargs=-Xmx1024m -Dfile.encoding=UTF-8
+org.gradle.workers.max=2`
     );
 
     // settings.gradle
