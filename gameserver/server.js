@@ -382,15 +382,13 @@ async function crearArchivosGradle(android, paquete, nombre) {
     // gradle.properties
     await fs.outputFile(
         path.join(android, "gradle.properties"),
-`
-org.gradle.jvmargs=-Xmx384m -Dfile.encoding=UTF-8
+        `org.gradle.jvmargs=-Xmx256m -XX:MaxMetaspaceSize=128m -Dfile.encoding=UTF-8
 org.gradle.daemon=false
 org.gradle.workers.max=1
 org.gradle.parallel=false
 org.gradle.caching=false
 android.useAndroidX=true
-android.enableJetifier=true
-`
+android.enableJetifier=true`
     );
 
     // settings.gradle
@@ -493,68 +491,43 @@ public class MainActivity extends Activity {
 // COMPILAR APK CON LOG
 // ===============================
 
-function compilarAPK(proyecto) {
+function compilarAPK(androidPath) {
     return new Promise((resolve, reject) => {
 
-        const comando = `
-        cd "${proyecto}" &&
-        gradle assembleDebug \
-        --no-daemon \
-        --no-parallel \
-        --max-workers=1 \
-        --console=plain
-        `;
+        const gradleCommand = `cd "${androidPath}" && gradle assembleDebug --no-daemon --no-parallel --max-workers=1 -Dorg.gradle.jvmargs="-Xmx256m -XX:MaxMetaspaceSize=128m"`;
 
-        exec(
-            comando,
-            {
-                maxBuffer: 1024 * 1024 * 20,
-                timeout: 900000,
-                env: {
-                    ...process.env,
-                    GRADLE_OPTS: "-Xmx384m -Dorg.gradle.daemon=false",
-                    JAVA_OPTS: "-Xmx384m",
-                    _JAVA_OPTIONS: "-Xmx384m"
-                }
+        exec(gradleCommand, {
+            env: {
+                ...process.env,
+                _JAVA_OPTIONS: "-Xmx256m -XX:MaxMetaspaceSize=128m",
+                GRADLE_OPTS: "-Xmx256m -Dorg.gradle.daemon=false"
             },
+            maxBuffer: 1024 * 1024 * 10
+        }, async (error, stdout, stderr) => {
 
-            async (error, stdout, stderr) => {
+            if (error) {
+                console.log("ERROR GRADLE:");
+                console.log(stderr || error.message);
+                
+                reject({
+                    mensaje: "Error compilando APK",
+                    detalle: stderr || error.message
+                });
+                return;
+            }
 
-                let log = `
+            console.log("APK creado correctamente");
+            
+            let log = `
 ========== GAMEVERSE APK LOG ==========
-
-FECHA:
-${new Date().toISOString()}
-
-SALIDA:
-${stdout}
-
-ERROR:
-${stderr}
-
+FECHA: ${new Date().toISOString()}
+SALIDA: ${stdout}
 =======================================
 `;
+            await guardarLog(log);
 
-                await guardarLog(log);
-
-                if (error) {
-
-                    console.log("ERROR GRADLE:");
-                    console.log(stderr);
-
-                    reject({
-                        mensaje:"Error compilando APK",
-                        detalle: stdout + "\n" + stderr
-                    });
-
-                    return;
-                }
-
-                resolve({
-                    apk:true
-                });
-            }
-        );
+            resolve({ apk: true });
+        });
     });
 }
 
