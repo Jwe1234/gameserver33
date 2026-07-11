@@ -759,6 +759,23 @@ process.on("unhandledRejection", (error) => {
 });
 
 // ===============================
+// ACEPTAR LICENCIAS ANDROID SDK
+// ===============================
+
+// Aceptar licencias Android SDK automáticamente
+const { execSync } = require("child_process");
+
+try {
+    execSync("yes | sdkmanager --licenses", {
+        stdio: "inherit"
+    });
+
+    console.log("✅ Licencias Android aceptadas");
+} catch (error) {
+    console.log("⚠️ No se pudieron aceptar licencias automáticamente");
+}
+
+// ===============================
 // INICIO DEL SERVIDOR
 // ===============================
 
