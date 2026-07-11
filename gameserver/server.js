@@ -79,17 +79,12 @@ allprojects {
 }
 `;
 
-        // gradle.properties con memoria actualizada
+        // gradle.properties simplificado
         const gradleProperties = `
-org.gradle.jvmargs=-Xmx512m -XX:MaxMetaspaceSize=128m -Dfile.encoding=UTF-8
-
+org.gradle.jvmargs=-Xmx1024m -XX:MaxMetaspaceSize=256m -Dfile.encoding=UTF-8
 org.gradle.daemon=false
 org.gradle.workers.max=1
 org.gradle.parallel=false
-org.gradle.caching=false
-org.gradle.configuration-cache=false
-org.gradle.vfs.watch=false
-
 android.useAndroidX=true
 android.enableJetifier=true
 `;
@@ -134,7 +129,7 @@ include ':app'
         await fs.writeFile(path.join(androidPath, 'settings.gradle'), settingsGradle);
         await fs.writeFile(path.join(srcPath, 'AndroidManifest.xml'), manifest);
         
-        // app/build.gradle con SDK 34
+        // app/build.gradle
         const appGradle = `
 plugins {
     id 'com.android.application'
@@ -232,31 +227,26 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 
-// Función compilarAPK con memoria aumentada
+// Función compilarAPK simplificada sin duplicación de memoria
 function compilarAPK(androidPath) {
     return new Promise((resolve, reject) => {
 
-        const gradleCommand = `cd "${androidPath}" && gradle assembleDebug --no-daemon --max-workers=1 -Dorg.gradle.jvmargs="-Xmx512m -XX:MaxMetaspaceSize=128m"`;
+        const gradleCommand = `cd "${androidPath}" && gradle assembleDebug --no-daemon --max-workers=1`;
 
         exec(gradleCommand, {
             env: {
-                ...process.env,
-                _JAVA_OPTIONS: "-Xmx512m -XX:MaxMetaspaceSize=128m",
-                GRADLE_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=128m -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=1"
+                ...process.env
             },
-
             maxBuffer: 1024 * 1024 * 2
-
         }, async (error, stdout, stderr) => {
 
             if (error) {
-
                 console.log("ERROR GRADLE:");
                 console.log(stderr || error.message);
 
                 reject({
-                    mensaje:"Error compilando APK",
-                    detalle:stderr || error.message
+                    mensaje: "Error compilando APK",
+                    detalle: stderr || error.message
                 });
 
                 return;
@@ -275,7 +265,7 @@ ${stdout}
 `);
 
             resolve({
-                apk:true
+                apk: true
             });
 
         });
@@ -398,8 +388,8 @@ setInterval(() => {
 // Iniciar servidor
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Gameverse Server running on port ${PORT}`);
-    console.log(`📊 Memory limit: 512MB (Node.js)`);
-    console.log(`📦 Gradle memory: 512MB`);
+    console.log(`📊 Node.js memory: ${Math.round(process.memoryUsage().heapTotal / 1024 / 1024)}MB`);
+    console.log(`📦 Gradle memory: 1024MB (configurado en gradle.properties)`);
     console.log(`⚙️  Workers: 1 | No parallel`);
 });
 
