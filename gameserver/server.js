@@ -382,7 +382,7 @@ async function crearArchivosGradle(android, paquete, nombre) {
     // gradle.properties
     await fs.outputFile(
         path.join(android, "gradle.properties"),
-        `org.gradle.jvmargs=-Xmx256m -XX:MaxMetaspaceSize=128m -Dfile.encoding=UTF-8
+        `org.gradle.jvmargs=-Xmx512m -Dfile.encoding=UTF-8
 org.gradle.daemon=false
 org.gradle.workers.max=1
 org.gradle.parallel=false
@@ -494,13 +494,13 @@ public class MainActivity extends Activity {
 function compilarAPK(androidPath) {
     return new Promise((resolve, reject) => {
 
-        const gradleCommand = `cd "${androidPath}" && gradle assembleDebug --no-daemon --no-parallel --max-workers=1 -Dorg.gradle.jvmargs="-Xmx256m -XX:MaxMetaspaceSize=128m"`;
+        const gradleCommand = `cd "${androidPath}" && gradle assembleDebug --no-daemon --stacktrace --info`;
 
         exec(gradleCommand, {
             env: {
                 ...process.env,
-                _JAVA_OPTIONS: "-Xmx256m -XX:MaxMetaspaceSize=128m",
-                GRADLE_OPTS: "-Xmx256m -Dorg.gradle.daemon=false"
+                _JAVA_OPTIONS: "-Xmx512m",
+                GRADLE_OPTS: "-Xmx512m -Dorg.gradle.daemon=false"
             },
             maxBuffer: 1024 * 1024 * 10
         }, async (error, stdout, stderr) => {
