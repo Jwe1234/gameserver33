@@ -379,7 +379,7 @@ async function crearArchivosGradle(android, paquete, nombre) {
         `sdk.dir=/usr/lib/android-sdk`
     );
 
-    // gradle.properties - MODIFICADO: memoria reducida a 256MB
+    // gradle.properties
     await fs.outputFile(
         path.join(android, "gradle.properties"),
         `org.gradle.jvmargs=-Xmx256m -Dfile.encoding=UTF-8
@@ -495,13 +495,11 @@ public class MainActivity extends AppCompatActivity {
 function compilarAPK(androidPath) {
     return new Promise((resolve, reject) => {
 
-        // MODIFICADO: con stacktrace, info y memoria reducida
         const gradleCommand = `cd "${androidPath}" && gradle assembleDebug --stacktrace --info --no-daemon --max-workers=1`;
 
         exec(gradleCommand, {
             env: {
                 ...process.env,
-                // MODIFICADO: memoria reducida a 256MB
                 _JAVA_OPTIONS: "-Xmx256m",
                 GRADLE_OPTS: "-Xmx256m -Dorg.gradle.daemon=false"
             },
@@ -587,10 +585,21 @@ app.get("/api/estado", (req, res) => {
 function ejecutarComando(comando) {
     return new Promise((resolve) => {
         exec(comando, (error, stdout, stderr) => {
+
+            console.log("STDOUT:");
+            console.log(stdout);
+
+            console.log("STDERR:");
+            console.log(stderr);
+
             if (error) {
+                console.log("ERROR COMPLETO:");
+                console.log(error);
+                
                 resolve({
                     ok: false,
-                    error: stderr || error.message
+                    error: stderr || error.message,
+                    detalle: error
                 });
             } else {
                 resolve({
