@@ -513,19 +513,17 @@ ${stderr || "Sin errores"}
                 await guardarLog(log);
 
                 if (error) {
+                    console.log("STDOUT:");
+                    console.log(stdout);
+
+                    console.log("STDERR:");
+                    console.log(stderr);
+
                     reject({
                         mensaje: "Error compilando APK",
-                        detalle: `
-ERROR:
-${error.message}
-
-STDERR:
-${stderr}
-
-STDOUT:
-${stdout}
-`
+                        detalle: stdout + "\n" + stderr + "\n" + error.message
                     });
+
                     return;
                 }
 
