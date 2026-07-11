@@ -79,9 +79,9 @@ allprojects {
 }
 `;
 
-        // gradle.properties con memoria reducida
+        // gradle.properties con memoria actualizada
         const gradleProperties = `
-org.gradle.jvmargs=-Xmx384m -XX:MaxMetaspaceSize=64m -Dfile.encoding=UTF-8
+org.gradle.jvmargs=-Xmx512m -XX:MaxMetaspaceSize=128m -Dfile.encoding=UTF-8
 
 org.gradle.daemon=false
 org.gradle.workers.max=1
@@ -232,17 +232,17 @@ public class MainActivity extends AppCompatActivity {
     }
 }
 
-// Función compilarAPK con memoria reducida
+// Función compilarAPK con memoria aumentada
 function compilarAPK(androidPath) {
     return new Promise((resolve, reject) => {
 
-        const gradleCommand = `cd "${androidPath}" && gradle assembleDebug --no-daemon --no-parallel --max-workers=1 --no-watch-fs`;
+        const gradleCommand = `cd "${androidPath}" && gradle assembleDebug --no-daemon --max-workers=1 -Dorg.gradle.jvmargs="-Xmx512m -XX:MaxMetaspaceSize=128m"`;
 
         exec(gradleCommand, {
             env: {
                 ...process.env,
-                _JAVA_OPTIONS: "-Xmx384m -XX:MaxMetaspaceSize=64m",
-                GRADLE_OPTS: "-Xmx384m -XX:MaxMetaspaceSize=64m -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=1"
+                _JAVA_OPTIONS: "-Xmx512m -XX:MaxMetaspaceSize=128m",
+                GRADLE_OPTS: "-Xmx512m -XX:MaxMetaspaceSize=128m -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=1"
             },
 
             maxBuffer: 1024 * 1024 * 2
@@ -399,7 +399,7 @@ setInterval(() => {
 app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 Gameverse Server running on port ${PORT}`);
     console.log(`📊 Memory limit: 512MB (Node.js)`);
-    console.log(`📦 Gradle memory: 384MB`);
+    console.log(`📦 Gradle memory: 512MB`);
     console.log(`⚙️  Workers: 1 | No parallel`);
 });
 
