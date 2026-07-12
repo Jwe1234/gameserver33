@@ -391,24 +391,26 @@ android.useAndroidX=true
 android.enableJetifier=true`
     );
 
-    // settings.gradle - MODIFICADO: repositorios alternativos
+    // settings.gradle - MODIFICADO: repositorios mixtos (Google + Aliyun)
     await fs.outputFile(
         path.join(android, "settings.gradle"),
         `pluginManagement {
     repositories {
-        maven { url 'https://maven.aliyun.com/repository/public' }
-        maven { url 'https://maven.aliyun.com/repository/google' }
+        google()
         mavenCentral()
         gradlePluginPortal()
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
     }
 }
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
+        google()
+        mavenCentral()
         maven { url 'https://maven.aliyun.com/repository/public' }
         maven { url 'https://maven.aliyun.com/repository/google' }
-        mavenCentral()
     }
 }
 
@@ -416,19 +418,23 @@ rootProject.name = "${nombre}"
 include ':app'`
     );
 
-    // build.gradle (raíz) - MODIFICADO: repositorios alternativos
+    // build.gradle (raíz) - MODIFICADO: versión 8.1.4 del plugin
     await fs.outputFile(
         path.join(android, "build.gradle"),
         `buildscript {
     repositories {
+        google()
+        mavenCentral()
         maven { url 'https://maven.aliyun.com/repository/public' }
         maven { url 'https://maven.aliyun.com/repository/google' }
-        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.1.4'
     }
 }
 
 plugins {
-    id 'com.android.application' version '8.2.2' apply false
+    id 'com.android.application' version '8.1.4' apply false
 }`
     );
 
@@ -649,7 +655,7 @@ app.get("/api/memoria", (req, res) => {
 });
 
 // ===============================
-// RUTA: TEST DE CONECTIVIDAD (NUEVO)
+// RUTA: TEST DE CONECTIVIDAD
 // ===============================
 
 app.get("/api/test-connectivity", async (req, res) => {
