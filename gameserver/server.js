@@ -388,10 +388,11 @@ org.gradle.workers.max=1
 org.gradle.parallel=false
 org.gradle.caching=false
 android.useAndroidX=true
-android.enableJetifier=true`
+android.enableJetifier=true
+kotlin.stdlib.default.dependency=false`
     );
 
-    // settings.gradle - MODIFICADO: repositorios mixtos (Google + Aliyun)
+    // settings.gradle
     await fs.outputFile(
         path.join(android, "settings.gradle"),
         `pluginManagement {
@@ -418,7 +419,7 @@ rootProject.name = "${nombre}"
 include ':app'`
     );
 
-    // build.gradle (raíz) - MODIFICADO: versión 8.1.4 del plugin
+    // build.gradle (raíz)
     await fs.outputFile(
         path.join(android, "build.gradle"),
         `buildscript {
@@ -438,7 +439,7 @@ plugins {
 }`
     );
 
-    // app/build.gradle
+    // app/build.gradle - MODIFICADO: dependencias simplificadas
     await fs.outputFile(
         path.join(android, "app", "build.gradle"),
         `plugins {
@@ -462,11 +463,16 @@ android {
             minifyEnabled false
         }
     }
+    
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
 }
 
 dependencies {
     implementation 'androidx.webkit:webkit:1.9.0'
-    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.6.1'
 }`
     );
 
