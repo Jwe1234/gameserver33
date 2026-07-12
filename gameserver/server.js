@@ -382,7 +382,7 @@ async function crearArchivosGradle(android, paquete, nombre) {
     // gradle.properties
     await fs.outputFile(
         path.join(android, "gradle.properties"),
-        `org.gradle.jvmargs=-Xmx256m -Dfile.encoding=UTF-8
+        `org.gradle.jvmargs=-Xmx1024m -Dfile.encoding=UTF-8
 org.gradle.daemon=false
 org.gradle.workers.max=1
 org.gradle.parallel=false
@@ -391,12 +391,13 @@ android.useAndroidX=true
 android.enableJetifier=true`
     );
 
-    // settings.gradle
+    // settings.gradle - MODIFICADO: repositorios alternativos
     await fs.outputFile(
         path.join(android, "settings.gradle"),
         `pluginManagement {
     repositories {
-        google()
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
         mavenCentral()
         gradlePluginPortal()
     }
@@ -405,7 +406,8 @@ android.enableJetifier=true`
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        google()
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
         mavenCentral()
     }
 }
@@ -414,10 +416,18 @@ rootProject.name = "${nombre}"
 include ':app'`
     );
 
-    // build.gradle (raíz)
+    // build.gradle (raíz) - MODIFICADO: repositorios alternativos
     await fs.outputFile(
         path.join(android, "build.gradle"),
-        `plugins {
+        `buildscript {
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/public' }
+        maven { url 'https://maven.aliyun.com/repository/google' }
+        mavenCentral()
+    }
+}
+
+plugins {
     id 'com.android.application' version '8.2.2' apply false
 }`
     );
@@ -431,12 +441,12 @@ include ':app'`
 
 android {
     namespace '${paquete}'
-    compileSdk 33
+    compileSdk 34
 
     defaultConfig {
         applicationId '${paquete}'
         minSdk 23
-        targetSdk 33
+        targetSdk 34
         versionCode 1
         versionName "1.0"
     }
@@ -500,18 +510,17 @@ function compilarAPK(androidPath) {
         exec(gradleCommand, {
             env: {
                 ...process.env,
-                _JAVA_OPTIONS: "-Xmx256m",
-                GRADLE_OPTS: "-Xmx256m -Dorg.gradle.daemon=false"
+                _JAVA_OPTIONS: "-Xmx1024m",
+                GRADLE_OPTS: "-Xmx1024m -Dorg.gradle.daemon=false"
             },
             maxBuffer: 1024 * 1024 * 10
         }, async (error, stdout, stderr) => {
 
-            // Mostrar toda la salida para depuración
             console.log("STDOUT:");
-            console.log(stdout);
+            console.log(stdout ? stdout.slice(-5000) : "");
 
             console.log("STDERR:");
-            console.log(stderr);
+            console.log(stderr ? stderr.slice(-5000) : "");
 
             if (error) {
                 console.log("ERROR GRADLE:");
@@ -640,6 +649,53 @@ app.get("/api/memoria", (req, res) => {
 });
 
 // ===============================
+// RUTA: TEST DE CONECTIVIDAD (NUEVO)
+// ===============================
+
+app.get("/api/test-connectivity", async (req, res) => {
+    const results = {};
+    
+    const testUrls = [
+        { name: 'Google Maven', url: 'https://dl.google.com/dl/android/maven2/' },
+        { name: 'Maven Central', url: 'https://repo.maven.apache.org/maven2/' },
+        { name: 'Aliyun Public', url: 'https://maven.aliyun.com/repository/public' },
+        { name: 'Aliyun Google', url: 'https://maven.aliyun.com/repository/google' }
+    ];
+    
+    for (const test of testUrls) {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            
+            const response = await fetch(test.url, { 
+                method: 'HEAD',
+                signal: controller.signal
+            });
+            
+            clearTimeout(timeoutId);
+            
+            results[test.name] = {
+                url: test.url,
+                ok: response.ok,
+                status: response.status,
+                statusText: response.statusText
+            };
+        } catch (error) {
+            results[test.name] = {
+                url: test.url,
+                ok: false,
+                error: error.message
+            };
+        }
+    }
+    
+    res.json({
+        timestamp: new Date().toISOString(),
+        results: results
+    });
+});
+
+// ===============================
 // RUTA PRINCIPAL: GENERAR APK
 // ===============================
 
@@ -704,7 +760,6 @@ app.post("/api/generar-apk", (req, res, next) => {
 
         const apkFinal = await guardarAPKFinal(apkGenerada, nombre, version);
         
-        // Detectar la URL base correctamente según el entorno
         const protocolo = req.headers["x-forwarded-proto"] || "http";
         
         const baseUrl = req.headers.host
@@ -716,7 +771,6 @@ app.post("/api/generar-apk", (req, res, next) => {
         console.log(`✅ APK generada: ${apkFinal.ruta}`);
         console.log(`🔗 URL de descarga: ${urlDescarga}`);
 
-        // Enviar respuesta JSON con la URL de descarga
         res.json({
             exito: true,
             mensaje: "APK generada correctamente",
@@ -724,7 +778,6 @@ app.post("/api/generar-apk", (req, res, next) => {
             nombre: apkFinal.nombre
         });
 
-        // Limpiar carpeta temporal después
         setTimeout(() => {
             limpiarCarpeta(proyecto);
         }, 5000);
